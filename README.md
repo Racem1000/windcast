@@ -5,7 +5,7 @@
 [![Course](https://img.shields.io/badge/Course-CS434-green)](.)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey)](LICENSE)
 
-**WindCast** is an end-to-end machine learning dashboard for wind turbine power forecasting, developed as the final project for **CS434 — Data Mining**. The system automatically preprocesses SCADA/weather data, engineers physics-informed features, trains and compares multiple regression models, and provides an interactive interface for real-time power forecasting.
+**WindCast** is an end-to-end machine learning dashboard for wind turbine power forecasting, developed as the final project for **CS434 — Data Analytics**. The system automatically preprocesses SCADA/weather data, engineers physics-informed features, trains and compares multiple regression models, and provides an interactive interface for real-time power forecasting.
 
 > 🏆 **Best model: CatBoost (Tuned)** — MAE: 0.1152 · RMSE: 0.1499 · R²: 0.7488
 
