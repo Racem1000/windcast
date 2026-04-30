@@ -308,7 +308,7 @@ def run_pipeline(df_input):
     from sklearn.model_selection import RandomizedSearchCV, TimeSeriesSplit
 
     warnings.filterwarnings("ignore")
-    os.makedirs("models", exist_ok=True)
+    os.makedirs("/tmp/models", exist_ok=True)
     log = []
 
     # ── 1. Parse & clean ────────────────────────────────────────
@@ -389,11 +389,11 @@ def run_pipeline(df_input):
         "n_dupes":         n_dupes,
         "outlier_report":  outlier_report,
     }
-    joblib.dump(quality_report, "models/quality_report.pkl")
+    joblib.dump(quality_report, "/tmp/models/quality_report.pkl")
 
     # Save cleaned df_raw (post missing/dupe/outlier handling)
     df_raw = df.copy()
-    joblib.dump(df_raw, "models/df_raw.pkl")
+    joblib.dump(df_raw, "/tmp/models/df_raw.pkl")
 
     # ── 2. Feature engineering ──────────────────────────────────
     # Compute turbulence quantile bins using only the training portion of the raw
@@ -407,7 +407,7 @@ def run_pipeline(df_input):
     _, turbulence_bins = pd.qcut(train_ti, q=3, retbins=True)
     turbulence_bins[0]  = -np.inf   # open left edge to cover any unseen min in test
     turbulence_bins[-1] =  np.inf   # open right edge to cover any unseen max in test
-    joblib.dump(turbulence_bins, "models/turbulence_bins.pkl")
+    joblib.dump(turbulence_bins, "/tmp/models/turbulence_bins.pkl")
 
     df_encoded = _engineer_features(df, turbulence_bins=turbulence_bins)
     log.append(f"✅ Feature engineering done — shape {df_encoded.shape}")
@@ -444,13 +444,13 @@ def run_pipeline(df_input):
     y_train_log = train["Power_log"]
     X_test      = test[feature_cols]
     y_test_raw  = test["Power"]
-    joblib.dump(feature_cols, "models/feature_cols.pkl")
+    joblib.dump(feature_cols, "/tmp/models/feature_cols.pkl")
 
     # ── 8. Scaling ───────────────────────────────────────────────
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled  = scaler.transform(X_test)
-    joblib.dump(scaler, "models/scaler.pkl")
+    joblib.dump(scaler, "/tmp/models/scaler.pkl")
 
     # ── 9. Train models ──────────────────────────────────────────
     def evaluate(y_true, y_pred):
@@ -467,7 +467,7 @@ def run_pipeline(df_input):
     y_pred_lr = np.expm1(lr.predict(X_test_scaled))
     results["Linear Regression"] = evaluate(y_test_raw, y_pred_lr)
     predictions["Linear Regression"] = dict(y_pred=y_pred_lr, y_actual=y_test_raw.values, ts=test.index)
-    joblib.dump(lr, "models/lr.pkl")
+    joblib.dump(lr, "/tmp/models/lr.pkl")
     log.append("✅ Linear Regression trained")
 
     # Lasso
@@ -476,7 +476,7 @@ def run_pipeline(df_input):
     y_pred_lasso = np.expm1(lasso.predict(X_test_scaled))
     results["Lasso"] = evaluate(y_test_raw, y_pred_lasso)
     predictions["Lasso"] = dict(y_pred=y_pred_lasso, y_actual=y_test_raw.values, ts=test.index)
-    joblib.dump(lasso, "models/lasso.pkl")
+    joblib.dump(lasso, "/tmp/models/lasso.pkl")
     log.append("✅ Lasso trained")
 
     # Ridge
@@ -485,7 +485,7 @@ def run_pipeline(df_input):
     y_pred_ridge = np.expm1(ridge.predict(X_test_scaled))
     results["Ridge"] = evaluate(y_test_raw, y_pred_ridge)
     predictions["Ridge"] = dict(y_pred=y_pred_ridge, y_actual=y_test_raw.values, ts=test.index)
-    joblib.dump(ridge, "models/ridge.pkl")
+    joblib.dump(ridge, "/tmp/models/ridge.pkl")
     log.append("✅ Ridge trained")
 
     # Random Forest
@@ -494,7 +494,7 @@ def run_pipeline(df_input):
     y_pred_rf = rf.predict(X_test)
     results["Random Forest"] = evaluate(y_test_raw, y_pred_rf)
     predictions["Random Forest"] = dict(y_pred=y_pred_rf, y_actual=y_test_raw.values, ts=test.index)
-    joblib.dump(rf, "models/rf.pkl")
+    joblib.dump(rf, "/tmp/models/rf.pkl")
     fi_rf = pd.Series(rf.feature_importances_, index=feature_cols).sort_values(ascending=False)
     log.append("✅ Random Forest trained")
 
@@ -522,7 +522,7 @@ def run_pipeline(df_input):
         y_pred_xgb_tuned = best_xgb.predict(X_test)
         results["XGBoost (Tuned)"] = evaluate(y_test_raw, y_pred_xgb_tuned)
         predictions["XGBoost (Tuned)"] = dict(y_pred=y_pred_xgb_tuned, y_actual=y_test_raw.values, ts=test.index)
-        joblib.dump(best_xgb, "models/xgb_tuned.pkl")
+        joblib.dump(best_xgb, "/tmp/models/xgb_tuned.pkl")
         fi_xgb = pd.Series(best_xgb.feature_importances_, index=feature_cols).sort_values(ascending=False)
         log.append("✅ XGBoost trained")
     except ImportError:
@@ -553,7 +553,7 @@ def run_pipeline(df_input):
         y_pred_lgbm_tuned = best_lgbm.predict(X_test)
         results["LightGBM (Tuned)"] = evaluate(y_test_raw, y_pred_lgbm_tuned)
         predictions["LightGBM (Tuned)"] = dict(y_pred=y_pred_lgbm_tuned, y_actual=y_test_raw.values, ts=test.index)
-        joblib.dump(best_lgbm, "models/lgbm_tuned.pkl")
+        joblib.dump(best_lgbm, "/tmp/models/lgbm_tuned.pkl")
         fi_lgbm = pd.Series(best_lgbm.feature_importances_, index=feature_cols).sort_values(ascending=False)
         log.append("✅ LightGBM trained")
     except ImportError:
@@ -585,7 +585,7 @@ def run_pipeline(df_input):
         y_pred_cat_tuned = best_cat.predict(X_test)
         results["CatBoost (Tuned)"] = evaluate(y_test_raw, y_pred_cat_tuned)
         predictions["CatBoost (Tuned)"] = dict(y_pred=y_pred_cat_tuned, y_actual=y_test_raw.values, ts=test.index)
-        joblib.dump(best_cat, "models/cat_tuned.pkl")
+        joblib.dump(best_cat, "/tmp/models/cat_tuned.pkl")
         fi_cat = pd.Series(best_cat.get_feature_importance(), index=feature_cols).sort_values(ascending=False)
         log.append("✅ CatBoost trained")
     except ImportError:
@@ -612,14 +612,14 @@ def run_pipeline(df_input):
         model_map["CatBoost (Tuned)"] = best_cat
 
     best_model_obj = model_map.get(best_model_name, rf)
-    joblib.dump({"model": best_model_obj, "name": best_model_name}, "models/best_model.pkl")
-    joblib.dump(comparison_df, "models/comparison_df.pkl")
-    joblib.dump(predictions,   "models/predictions.pkl")
+    joblib.dump({"model": best_model_obj, "name": best_model_name}, "/tmp/models/best_model.pkl")
+    joblib.dump(comparison_df, "/tmp/models/comparison_df.pkl")
+    joblib.dump(predictions,   "/tmp/models/predictions.pkl")
     joblib.dump({"RF": fi_rf, "XGBoost": fi_xgb, "LightGBM": fi_lgbm, "CatBoost": fi_cat},
-                "models/feature_importances.pkl")
+                "/tmp/models/feature_importances.pkl")
 
     last_rows = df_encoded[feature_cols + ["Power"]].tail(48).copy()
-    joblib.dump(last_rows, "models/last_rows.pkl")
+    joblib.dump(last_rows, "/tmp/models/last_rows.pkl")
 
     raw_weather_cols = [
         "windspeed_10m", "windspeed_100m", "windgusts_10m",
@@ -630,7 +630,7 @@ def run_pipeline(df_input):
         col: {"min": float(df_raw[col].min()), "max": float(df_raw[col].max()), "mean": float(df_raw[col].mean())}
         for col in raw_weather_cols if col in df_raw.columns
     }
-    joblib.dump(feature_ranges, "models/feature_ranges.pkl")
+    joblib.dump(feature_ranges, "/tmp/models/feature_ranges.pkl")
 
     meta = {
         "best_model_name": best_model_name,
@@ -646,10 +646,10 @@ def run_pipeline(df_input):
         "rated_speed": 12.0,
         "cut_out":     25.0,
     }
-    joblib.dump(meta, "models/meta.pkl")
+    joblib.dump(meta, "/tmp/models/meta.pkl")
 
     log.append(f"🏆 Best model: {best_model_name}")
-    log.append("✅ All artifacts saved to models/")
+    log.append("✅ All artifacts saved to /tmp/models/")
     return log
 
 
@@ -658,7 +658,7 @@ def run_pipeline(df_input):
 # ─────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_all():
-    base = "models"
+    base = "/tmp/models"
     if not os.path.exists(f"{base}/df_raw.pkl"):
         return None
     return {
@@ -679,13 +679,13 @@ def load_all():
 def load_ensemble_models():
     """Load all individual model files once and cache them for the session."""
     model_files = {
-        "Linear Regression": "models/lr.pkl",
-        "Lasso":             "models/lasso.pkl",
-        "Ridge":             "models/ridge.pkl",
-        "Random Forest":     "models/rf.pkl",
-        "XGBoost (Tuned)":   "models/xgb_tuned.pkl",
-        "LightGBM (Tuned)":  "models/lgbm_tuned.pkl",
-        "CatBoost (Tuned)":  "models/cat_tuned.pkl",
+        "Linear Regression": "/tmp/models/lr.pkl",
+        "Lasso":             "/tmp/models/lasso.pkl",
+        "Ridge":             "/tmp/models/ridge.pkl",
+        "Random Forest":     "/tmp/models/rf.pkl",
+        "XGBoost (Tuned)":   "/tmp/models/xgb_tuned.pkl",
+        "LightGBM (Tuned)":  "/tmp/models/lgbm_tuned.pkl",
+        "CatBoost (Tuned)":  "/tmp/models/cat_tuned.pkl",
     }
     loaded = {}
     for name, path in model_files.items():
