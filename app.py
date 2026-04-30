@@ -514,7 +514,7 @@ def run_pipeline(df_input):
         }
         rs_xgb = RandomizedSearchCV(
             XGBRegressor(random_state=42, verbosity=0), param_dist_xgb,
-            n_iter=3, cv=tscv, scoring="neg_mean_squared_error",
+            n_iter=10, cv=tscv, scoring="neg_mean_squared_error",
             random_state=42, n_jobs=-1,
         )
         rs_xgb.fit(X_train, y_train_raw)
@@ -532,7 +532,7 @@ def run_pipeline(df_input):
     # LightGBM
     try:
         import lightgbm as lgb
-        lgbm_default = lgb.LGBMRegressor(n_estimators=100, random_state=42, n_jobs=-1, verbosity=-1)
+        lgbm_default = lgb.LGBMRegressor(n_estimators=200, random_state=42, n_jobs=-1, verbosity=-1)
         lgbm_default.fit(X_train, y_train_raw)
         y_pred_lgbm = lgbm_default.predict(X_test)
         results["LightGBM"] = evaluate(y_test_raw, y_pred_lgbm)
