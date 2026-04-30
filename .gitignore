@@ -16,7 +16,7 @@ env/
 ENV/
 
 # ── Trained model artifacts (generated at runtime) ────────────
-models/
+
 *.pkl
 *.joblib
 
