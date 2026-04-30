@@ -1,0 +1,38 @@
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# ── Virtual environments ───────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Trained model artifacts (generated at runtime) ────────────
+models/
+*.pkl
+*.joblib
+
+# ── Streamlit local cache ──────────────────────────────────────
+.streamlit/secrets.toml
+
+# ── Data files (upload your own dataset) ──────────────────────
+*.csv
+data/
+
+# ── IDE / OS ───────────────────────────────────────────────────
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db
+
+# ── Jupyter ───────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
