@@ -579,7 +579,7 @@ if page == "🏠  Overview":
             """, unsafe_allow_html=True)
 
     st.markdown('<div class="section-header">Monthly Power Production</div>', unsafe_allow_html=True)
-    monthly = df_raw["Power"].resample("M").mean().reset_index()
+    monthly = df_raw["Power"].resample("ME").mean().reset_index()
     monthly.columns = ["Date", "Avg Power"]
     fig = px.bar(
         monthly, x="Date", y="Avg Power",
@@ -787,7 +787,7 @@ elif page == "📈  Energy Production":
     if year_filter:
         df_ts = df_ts[df_ts.index.year.isin(year_filter)]
 
-    rule_map = {"Hourly (raw)": None, "Daily": "D", "Weekly": "W", "Monthly": "M"}
+    rule_map = {"Hourly (raw)": None, "Daily": "D", "Weekly": "W", "Monthly": "ME"}
     rule = rule_map[resample_opt]
     if rule:
         df_plot = df_ts[feature_sel].resample(rule).mean().reset_index()
